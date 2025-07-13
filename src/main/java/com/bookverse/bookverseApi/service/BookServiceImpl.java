@@ -1,7 +1,10 @@
 package com.bookverse.bookverseApi.service;
 
 
+import com.bookverse.bookverseApi.dto.BookRequestDto;
+import com.bookverse.bookverseApi.dto.BookResponseDto;
 import com.bookverse.bookverseApi.entity.Book;
+import com.bookverse.bookverseApi.exception.BookNotFoundExcetion;
 import com.bookverse.bookverseApi.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +29,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book getBookById(Long id){
-        return bookRepository.findById(id).orElseThrow(() -> new RuntimeException("Book not found"));
+        return bookRepository.findById(id).orElseThrow(() -> new BookNotFoundExcetion(id));
     }
 
     @Override
@@ -44,8 +47,13 @@ public class BookServiceImpl implements BookService {
     @Override
     public String deleteBook(Long id){
         try{
-            bookRepository.deleteById(id);
-            return "Book deleted successfully";
+            if(!bookRepository.existsById(id)) {
+                throw new BookNotFoundExcetion(id);
+            }
+            else {
+                bookRepository.deleteById(id);
+                return "Book deleted successfully";
+            }
         } catch (Exception e){
             return e.getMessage();
         }
